@@ -30,7 +30,40 @@ public final class CatalogDtos {
             UUID id,
             String name,
             long publishedQuestions,
-            int sortOrder
+            int sortOrder,
+            String keyPoints
+    ) {
+    }
+
+    public record TopicNotes(
+            UUID id,
+            String name,
+            int syllabusYear,
+            String keyPoints,
+            String detailedExplanation,
+            long publishedQuestions
+    ) {
+    }
+
+    public record SyllabusTopic(UUID id, String name, String keyPoints, long publishedQuestions) {
+    }
+
+    public record SyllabusChapter(
+            UUID id,
+            String name,
+            String subjectCode,
+            String subjectName,
+            List<SyllabusTopic> topics
+    ) {
+    }
+
+    public record ExamSyllabus(
+            UUID examId,
+            String examCode,
+            String examName,
+            int syllabusYear,
+            String coverageNote,
+            List<SyllabusChapter> chapters
     ) {
     }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:medycatalog/features/billing/data/billing_repository.dart';
+import 'package:medycatalog/features/billing/presentation/ad_banner_slot.dart';
 import 'package:medycatalog/features/catalog/data/catalog_repository.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -13,14 +15,19 @@ class HomeScreen extends ConsumerWidget {
         title: const Text('MedyCatalog'),
         actions: [
           IconButton(
+            tooltip: 'Premium',
+            onPressed: () => context.push('/premium'),
+            icon: const Icon(Icons.workspace_premium_outlined),
+          ),
+          IconButton(
             tooltip: 'Profile',
             onPressed: () => context.push('/profile'),
             icon: const Icon(Icons.person_outline),
           ),
         ],
       ),
-      body: FutureBuilder<HomeData>(
-        future: ref.read(catalogRepositoryProvider).home(),
+      body: FutureBuilder<_HomeBundle>(
+        future: _load(ref),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
@@ -28,7 +35,8 @@ class HomeScreen extends ConsumerWidget {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          final home = snapshot.data!;
+          final bundle = snapshot.data!;
+          final home = bundle.home;
           final hour = DateTime.now().hour;
           final greeting = hour < 12
               ? 'Good morning'
@@ -41,6 +49,14 @@ class HomeScreen extends ConsumerWidget {
               Text('$greeting, ${home.studentName}', style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 4),
               Text('${home.examCode} · ${home.examName}'),
+              if (bundle.me != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  bundle.me!.entitlement.premium
+                      ? 'Premium · unlimited practice, ads off'
+                      : '${bundle.me!.entitlement.practiceRemainingToday} practice starts left today',
+                ),
+              ],
               const SizedBox(height: 20),
               Text('Continue learning', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
@@ -62,12 +78,39 @@ class HomeScreen extends ConsumerWidget {
                     : () => context.push('/practice/setup?examId=${home.examId}'),
                 child: const Text('Start practice'),
               ),
+              if (bundle.me != null && !bundle.me!.entitlement.premium)
+                TextButton(
+                  onPressed: () => context.push('/premium'),
+                  child: const Text('Go Premium — yearly ₹1,499'),
+                ),
+              AdBannerSlot(config: bundle.ads, placement: 'HOME_BANNER'),
             ],
           );
         },
       ),
     );
   }
+
+  Future<_HomeBundle> _load(WidgetRef ref) async {
+    final home = await ref.read(catalogRepositoryProvider).home();
+    SubscriptionMe? me;
+    AdsConfig? ads;
+    try {
+      me = await ref.read(billingRepositoryProvider).me();
+    } catch (_) {}
+    try {
+      ads = await ref.read(billingRepositoryProvider).ads();
+    } catch (_) {}
+    return _HomeBundle(home, me, ads);
+  }
+}
+
+class _HomeBundle {
+  const _HomeBundle(this.home, this.me, this.ads);
+
+  final HomeData home;
+  final SubscriptionMe? me;
+  final AdsConfig? ads;
 }
 
 class ChaptersScreen extends ConsumerWidget {
@@ -110,7 +153,7 @@ class ChaptersScreen extends ConsumerWidget {
                     title: Text(chapter.name),
                     subtitle: Text('${chapter.publishedQuestions} questions'),
                     onTap: () => context.push(
-                      '/practice/setup?examId=$examId&subjectId=$subjectId&chapterId=${chapter.id}',
+                      '/topics?examId=$examId&subjectId=$subjectId&chapterId=${chapter.id}&chapterName=${Uri.encodeComponent(chapter.name)}',
                     ),
                   ),
                 ),

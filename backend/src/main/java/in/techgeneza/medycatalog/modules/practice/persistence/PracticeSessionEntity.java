@@ -77,6 +77,12 @@ public class PracticeSessionEntity {
     @Column(name = "time_taken_seconds")
     private Integer timeTakenSeconds;
 
+    @Column(name = "entitlement_snapshot")
+    private String entitlementSnapshot;
+
+    @Column(name = "rewarded_attempt", nullable = false)
+    private boolean rewardedAttempt;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 }

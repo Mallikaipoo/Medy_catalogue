@@ -26,6 +26,8 @@ Thumbs.db
 
 # Java / Gradle
 backend/.gradle/
+backend/.gradle-dist/
+backend/gradle-9.7.1-bin.zip
 backend/build/
 backend/out/
 *.class

@@ -15,7 +15,7 @@ Reports and playbooks live in `docs/phases/`.
 | 7 | Performance / study plan | M | Playbook |
 | 8 | Leaderboard | M | Playbook |
 | 9 | AI | L | Playbook |
-| 10 | Monetization | L | Playbook |
+| 10 | Monetization | L | Done |
 | 11 | Admin panel | XL | Playbook |
 | 12 | Testing hardening | L | Playbook |
 | 13 | Beta | L | Playbook |

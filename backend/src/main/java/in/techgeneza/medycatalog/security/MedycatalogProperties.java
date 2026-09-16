@@ -9,8 +9,13 @@ public record MedycatalogProperties(
         Jwt jwt,
         Auth auth,
         Cors cors,
-        Redis redis
+        Redis redis,
+        Billing billing
 ) {
+    public Billing billing() {
+        return billing == null ? Billing.defaults() : billing;
+    }
+
     public record Jwt(String secret, Duration accessTtl, Duration refreshTtl) {
     }
 
@@ -21,5 +26,23 @@ public record MedycatalogProperties(
     }
 
     public record Redis(boolean enabled) {
+    }
+
+    public record Billing(boolean sandbox, Duration grace, String googleRtdnSecret, String appleNotificationSecret) {
+        public static Billing defaults() {
+            return new Billing(true, Duration.ofDays(3), "", "");
+        }
+
+        public Duration grace() {
+            return grace == null ? Duration.ofDays(3) : grace;
+        }
+
+        public String googleRtdnSecret() {
+            return googleRtdnSecret == null ? "" : googleRtdnSecret;
+        }
+
+        public String appleNotificationSecret() {
+            return appleNotificationSecret == null ? "" : appleNotificationSecret;
+        }
     }
 }

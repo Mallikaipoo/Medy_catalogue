@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:medycatalog/features/billing/data/billing_repository.dart';
+import 'package:medycatalog/features/billing/presentation/ad_banner_slot.dart';
 import 'package:medycatalog/features/practice/data/practice_repository.dart';
 
 class ResultScreen extends ConsumerWidget {
@@ -10,8 +12,8 @@ class ResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder<PracticeResult>(
-      future: ref.read(practiceRepositoryProvider).complete(sessionId),
+    return FutureBuilder<_ResultBundle>(
+      future: _load(ref),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(body: Center(child: Text(snapshot.error.toString())));
@@ -19,7 +21,8 @@ class ResultScreen extends ConsumerWidget {
         if (!snapshot.hasData) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        final result = snapshot.data!;
+        final bundle = snapshot.data!;
+        final result = bundle.result;
         return Scaffold(
           appBar: AppBar(title: const Text('Result')),
           body: ListView(
@@ -40,12 +43,29 @@ class ResultScreen extends ConsumerWidget {
                 onPressed: () => context.go('/home'),
                 child: const Text('Continue learning'),
               ),
+              AdBannerSlot(config: bundle.ads, placement: 'RESULT_INTERSTITIAL'),
             ],
           ),
         );
       },
     );
   }
+
+  Future<_ResultBundle> _load(WidgetRef ref) async {
+    final result = await ref.read(practiceRepositoryProvider).complete(sessionId);
+    AdsConfig? ads;
+    try {
+      ads = await ref.read(billingRepositoryProvider).ads();
+    } catch (_) {}
+    return _ResultBundle(result, ads);
+  }
+}
+
+class _ResultBundle {
+  const _ResultBundle(this.result, this.ads);
+
+  final PracticeResult result;
+  final AdsConfig? ads;
 }
 
 class ReviewScreen extends ConsumerWidget {

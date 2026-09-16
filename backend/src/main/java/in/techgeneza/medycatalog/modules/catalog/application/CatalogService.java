@@ -2,10 +2,14 @@ package in.techgeneza.medycatalog.modules.catalog.application;
 
 import in.techgeneza.medycatalog.common.exception.ApiException;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.ChapterCard;
+import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.ExamSyllabus;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.HomeResponse;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.StudentQuestion;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.SubjectCard;
+import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.SyllabusChapter;
+import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.SyllabusTopic;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.TopicCard;
+import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.TopicNotes;
 import in.techgeneza.medycatalog.modules.catalog.persistence.ChapterEntity;
 import in.techgeneza.medycatalog.modules.catalog.persistence.ChapterRepository;
 import in.techgeneza.medycatalog.modules.catalog.persistence.ExamEntity;
@@ -113,8 +117,58 @@ public class CatalogService {
                         topic.getId(),
                         topic.getName(),
                         questions.countByTopicIdAndStatus(topic.getId(), PUBLISHED),
-                        topic.getSortOrder()))
+                        topic.getSortOrder(),
+                        topic.getKeyPoints()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public TopicNotes topicNotes(UUID topicId) {
+        var topic = topics.findById(topicId)
+                .orElseThrow(() -> ApiException.notFound("That topic is not available."));
+        int year = topic.getSyllabusYear() == null ? 2025 : topic.getSyllabusYear();
+        return new TopicNotes(
+                topic.getId(),
+                topic.getName(),
+                year,
+                topic.getKeyPoints(),
+                topic.getDetailedExplanation(),
+                questions.countByTopicIdAndStatus(topic.getId(), PUBLISHED)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ExamSyllabus syllabus(UUID examId) {
+        ExamEntity exam = exams.findById(examId)
+                .filter(row -> "ACTIVE".equals(row.getStatus()))
+                .orElseThrow(() -> ApiException.notFound("That examination is not available."));
+        List<SyllabusChapter> chapterDtos = chapters.findByExamIdOrderBySortOrderAsc(examId).stream()
+                .map(chapter -> {
+                    SubjectEntity subject = subjects.findById(chapter.getSubjectId())
+                            .orElseThrow(() -> ApiException.notFound("Subject not found."));
+                    List<SyllabusTopic> topicDtos = topics.findByChapterIdOrderBySortOrderAsc(chapter.getId()).stream()
+                            .map(topic -> new SyllabusTopic(
+                                    topic.getId(),
+                                    topic.getName(),
+                                    topic.getKeyPoints(),
+                                    questions.countByTopicIdAndStatus(topic.getId(), PUBLISHED)))
+                            .toList();
+                    return new SyllabusChapter(
+                            chapter.getId(),
+                            chapter.getName(),
+                            subject.getCode(),
+                            subject.getName(),
+                            topicDtos);
+                })
+                .toList();
+        return new ExamSyllabus(
+                exam.getId(),
+                exam.getCode(),
+                exam.getName(),
+                2025,
+                "Latest public syllabus outline (2025). Practice items are original MedyCatalog questions covering typical 2016–2025 themes — not copied official papers.",
+                chapterDtos
+        );
     }
 
     @Transactional(readOnly = true)

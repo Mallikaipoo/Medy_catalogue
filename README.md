@@ -18,7 +18,7 @@ Flutter never connects to PostgreSQL. Secrets never live in the mobile binary.
 
 ## Current phase
 
-**Phase 4 — Practice engine** is implemented (catalog + scored practice).
+**Phase 10 — Monetization** is implemented (yearly ₹1,499 default, server-side Premium, ads never on the player).
 
 | Phase | Status |
 | --- | --- |
@@ -26,7 +26,8 @@ Flutter never connects to PostgreSQL. Secrets never live in the mobile binary.
 | 2 Authentication | Complete |
 | 3 Catalog | Complete |
 | 4 Practice | Complete |
-| 5–14 | Playbooks ready |
+| 10 Monetization | Complete |
+| 5–9, 11–14 | Playbooks ready |
 
 ## Prerequisites
 
@@ -57,7 +58,7 @@ Install the Flutter SDK, then:
 
 ```bash
 cd mobile
-flutter create . --org in.techgeneza --project-name medycatalog --platforms android,ios
+flutter create . --org in.claris --project-name medycatalog --platforms android,ios
 flutter pub get
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ```
@@ -66,8 +67,8 @@ On a physical device, replace `10.0.2.2` with your machine LAN IP.
 
 ## Application identifiers
 
-- Android application ID: `in.techgeneza.medycatalog`
-- iOS bundle ID: `in.techgeneza.medycatalog`
+- Android application ID: `in.claris.medycatalog`
+- iOS bundle ID: `in.claris.medycatalog`
 
 Signing keys and store credentials are not stored in Git.
 

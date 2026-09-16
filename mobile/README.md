@@ -1,12 +1,12 @@
 # Flutter student app
 
-Application ID / bundle ID: `in.techgeneza.medycatalog`
+Application ID / bundle ID: `in.claris.medycatalog`
 
 The Flutter SDK is required to generate `android/` and `ios/` platform folders:
 
 ```bash
 cd mobile
-flutter create . --org in.techgeneza --project-name medycatalog --platforms android,ios
+flutter create . --org in.claris --project-name medycatalog --platforms android,ios
 flutter pub get
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 ```

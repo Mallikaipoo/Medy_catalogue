@@ -51,8 +51,13 @@ medycatalog:
   auth:
     expose-otp: false
     google-client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
-    apple-audience: ${APPLE_BUNDLE_ID:in.techgeneza.medycatalog}
+    apple-audience: ${APPLE_BUNDLE_ID:in.claris.medycatalog}
   cors:
     admin-origin: ${ADMIN_ORIGIN:http://localhost:3000}
   redis:
     enabled: false
+  billing:
+    sandbox: ${MEDYCATALOG_BILLING_SANDBOX:true}
+    grace: 3d
+    google-rtdn-secret: ${GOOGLE_PLAY_RTDN_SECRET:}
+    apple-notification-secret: ${APPLE_NOTIFICATION_SECRET:}

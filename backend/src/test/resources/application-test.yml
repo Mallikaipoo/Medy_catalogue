@@ -13,6 +13,9 @@ medycatalog:
   auth:
     expose-otp: true
     google-client-id: test-google-client
-    apple-audience: in.techgeneza.medycatalog.test
+    apple-audience: in.claris.medycatalog.test
   redis:
     enabled: false
+  billing:
+    sandbox: true
+    grace: 3d

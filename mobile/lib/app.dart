@@ -7,6 +7,8 @@ import 'package:medycatalog/features/auth/presentation/login_screen.dart';
 import 'package:medycatalog/features/auth/presentation/register_screen.dart';
 import 'package:medycatalog/features/auth/presentation/session_controller.dart';
 import 'package:medycatalog/features/auth/presentation/splash_screen.dart';
+import 'package:medycatalog/features/billing/presentation/paywall_screen.dart';
+import 'package:medycatalog/features/catalog/presentation/topics_screen.dart';
 import 'package:medycatalog/features/home/presentation/home_screen.dart';
 import 'package:medycatalog/features/practice/presentation/practice_setup_screen.dart';
 import 'package:medycatalog/features/practice/presentation/question_player_screen.dart';
@@ -59,6 +61,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
       GoRoute(path: '/exams', builder: (context, state) => const ExamPickerScreen()),
       GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+      GoRoute(path: '/premium', builder: (context, state) => const PaywallScreen()),
       GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
       GoRoute(
         path: '/chapters',
@@ -66,6 +69,24 @@ final routerProvider = Provider<GoRouter>((ref) {
           examId: state.uri.queryParameters['examId'] ?? '',
           subjectId: state.uri.queryParameters['subjectId'] ?? '',
           subjectName: state.uri.queryParameters['subjectName'] ?? 'Subject',
+        ),
+      ),
+      GoRoute(
+        path: '/topics',
+        builder: (context, state) => TopicsScreen(
+          examId: state.uri.queryParameters['examId'] ?? '',
+          subjectId: state.uri.queryParameters['subjectId'] ?? '',
+          chapterId: state.uri.queryParameters['chapterId'] ?? '',
+          chapterName: state.uri.queryParameters['chapterName'] ?? 'Chapter',
+        ),
+      ),
+      GoRoute(
+        path: '/syllabus',
+        builder: (context, state) => SyllabusNotesScreen(
+          examId: state.uri.queryParameters['examId'] ?? '',
+          subjectId: state.uri.queryParameters['subjectId'] ?? '',
+          chapterId: state.uri.queryParameters['chapterId'] ?? '',
+          topicId: state.uri.queryParameters['topicId'] ?? '',
         ),
       ),
       GoRoute(

@@ -74,9 +74,13 @@ Phase 2 already exposes `GET /exams` as a thin list so the exam picker can work.
 
 `POST /ai-tutor/conversations`, `POST /ai-tutor/conversations/{id}/messages`
 
-## Subscription (Phase 10)
+## Subscription (Phase 10 — implemented)
 
-`GET /subscription/plans`, `GET /subscription/me`, `POST /subscription/verify`, `POST /subscription/restore`
+`GET /subscription/plans`, `GET /subscription/me`, `POST /subscription/verify`, `POST /subscription/restore`, `POST /subscription/rewarded`
+
+`GET /ads/config` — Premium and `ads_enabled=false` return no placements. Player/exam/submit placements are stripped.
+
+## Legal
 
 ## Legal
 

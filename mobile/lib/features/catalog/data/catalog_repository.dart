@@ -46,6 +46,26 @@ class CatalogRepository {
     }
   }
 
+  Future<List<TopicCard>> topics(String chapterId) async {
+    try {
+      final response = await _dio.get<List<dynamic>>('/chapters/$chapterId/topics');
+      return (response.data ?? const [])
+          .map((item) => TopicCard.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (error) {
+      throw _wrap(error);
+    }
+  }
+
+  Future<TopicNotes> topicNotes(String topicId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/topics/$topicId');
+      return TopicNotes.fromJson(response.data!);
+    } on DioException catch (error) {
+      throw _wrap(error);
+    }
+  }
+
   Object _wrap(DioException error) => error.error is Failure ? error.error as Failure : Failure.offline;
 }
 
@@ -115,6 +135,53 @@ class ChapterCard {
     return ChapterCard(
       id: json['id'] as String,
       name: json['name'] as String,
+      publishedQuestions: (json['publishedQuestions'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class TopicCard {
+  const TopicCard({required this.id, required this.name, required this.publishedQuestions, this.keyPoints});
+
+  final String id;
+  final String name;
+  final int publishedQuestions;
+  final String? keyPoints;
+
+  factory TopicCard.fromJson(Map<String, dynamic> json) {
+    return TopicCard(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      publishedQuestions: (json['publishedQuestions'] as num?)?.toInt() ?? 0,
+      keyPoints: json['keyPoints'] as String?,
+    );
+  }
+}
+
+class TopicNotes {
+  const TopicNotes({
+    required this.id,
+    required this.name,
+    required this.syllabusYear,
+    this.keyPoints,
+    this.detailedExplanation,
+    required this.publishedQuestions,
+  });
+
+  final String id;
+  final String name;
+  final int syllabusYear;
+  final String? keyPoints;
+  final String? detailedExplanation;
+  final int publishedQuestions;
+
+  factory TopicNotes.fromJson(Map<String, dynamic> json) {
+    return TopicNotes(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      syllabusYear: (json['syllabusYear'] as num?)?.toInt() ?? 2025,
+      keyPoints: json['keyPoints'] as String?,
+      detailedExplanation: json['detailedExplanation'] as String?,
       publishedQuestions: (json['publishedQuestions'] as num?)?.toInt() ?? 0,
     );
   }

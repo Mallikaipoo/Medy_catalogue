@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface ChapterRepository extends JpaRepository<ChapterEntity, UUID> {
     List<ChapterEntity> findByExamIdAndSubjectIdOrderBySortOrderAsc(UUID examId, UUID subjectId);
+
+    List<ChapterEntity> findByExamIdOrderBySortOrderAsc(UUID examId);
 }

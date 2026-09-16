@@ -28,4 +28,13 @@ public class TopicEntity {
 
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
+
+    @Column(name = "key_points")
+    private String keyPoints;
+
+    @Column(name = "detailed_explanation")
+    private String detailedExplanation;
+
+    @Column(name = "syllabus_year")
+    private Integer syllabusYear;
 }

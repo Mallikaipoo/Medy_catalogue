@@ -46,6 +46,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/password/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/legal/**").permitAll()
+                        .requestMatchers("/api/v1/webhooks/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/demo.html", "/*.html", "/error").permitAll()
                         .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                         .permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

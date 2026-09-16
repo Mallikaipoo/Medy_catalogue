@@ -1,10 +1,12 @@
 package in.techgeneza.medycatalog.modules.catalog.api;
 
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.ChapterCard;
+import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.ExamSyllabus;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.HomeResponse;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.StudentQuestion;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.SubjectCard;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.TopicCard;
+import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.TopicNotes;
 import in.techgeneza.medycatalog.modules.catalog.application.CatalogService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +46,16 @@ public class CatalogController {
     @GetMapping("/chapters/{chapterId}/topics")
     public List<TopicCard> topics(@PathVariable UUID chapterId) {
         return catalogService.topics(chapterId);
+    }
+
+    @GetMapping("/topics/{topicId}")
+    public TopicNotes topicNotes(@PathVariable UUID topicId) {
+        return catalogService.topicNotes(topicId);
+    }
+
+    @GetMapping("/exams/{examId}/syllabus")
+    public ExamSyllabus syllabus(@PathVariable UUID examId) {
+        return catalogService.syllabus(examId);
     }
 
     @GetMapping("/questions/{questionId}")

@@ -22,7 +22,8 @@ class JwtServiceTest {
                     ),
                     new MedycatalogProperties.Auth(true, "google-client", "apple-aud"),
                     new MedycatalogProperties.Cors("http://localhost:3000"),
-                    new MedycatalogProperties.Redis(false)
+                    new MedycatalogProperties.Redis(false),
+                    MedycatalogProperties.Billing.defaults()
             ),
             Clock.systemUTC()
     );
@@ -50,7 +51,8 @@ class JwtServiceTest {
                 new MedycatalogProperties.Jwt("short", Duration.ofMinutes(15), Duration.ofDays(30)),
                 new MedycatalogProperties.Auth(false, "", ""),
                 new MedycatalogProperties.Cors("http://localhost:3000"),
-                new MedycatalogProperties.Redis(false)
+                new MedycatalogProperties.Redis(false),
+                MedycatalogProperties.Billing.defaults()
         );
         assertThatThrownBy(() -> new JwtService(shortSecret, Clock.systemUTC()))
                 .isInstanceOf(IllegalStateException.class);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:medycatalog/features/auth/domain/user_profile.dart';
 import 'package:medycatalog/features/auth/presentation/session_controller.dart';
 
@@ -43,6 +44,16 @@ class ProfileScreen extends ConsumerWidget {
                 subtitle: Text(exam.name),
               ),
             ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.workspace_premium_outlined),
+              title: const Text('Premium'),
+              subtitle: const Text('Yearly ₹1,499 · ads off · unlimited practice'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/premium'),
+            ),
+          ),
           const SizedBox(height: 24),
           const Text('Account, privacy, and examination selection. Practice lives on Home.'),
         ],

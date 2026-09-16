@@ -21,6 +21,9 @@ import in.techgeneza.medycatalog.modules.practice.api.dto.PracticeDtos.SessionIt
 import in.techgeneza.medycatalog.modules.practice.api.dto.PracticeDtos.SessionResponse;
 import in.techgeneza.medycatalog.modules.practice.api.dto.PracticeDtos.StartRequest;
 import in.techgeneza.medycatalog.modules.practice.api.dto.PracticeDtos.Step;
+import in.techgeneza.medycatalog.modules.billing.application.EntitlementService;
+import in.techgeneza.medycatalog.modules.billing.domain.EntitlementSnapshot;
+import in.techgeneza.medycatalog.modules.billing.domain.ReviewEntitlementFilter;
 import in.techgeneza.medycatalog.modules.practice.domain.ScoringCalculator;
 import in.techgeneza.medycatalog.modules.practice.persistence.PracticeAnswerEntity;
 import in.techgeneza.medycatalog.modules.practice.persistence.PracticeAnswerRepository;
@@ -59,6 +62,7 @@ public class PracticeService {
     private final PracticeSessionRepository sessions;
     private final PracticeSessionItemRepository items;
     private final PracticeAnswerRepository answers;
+    private final EntitlementService entitlements;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
@@ -70,6 +74,7 @@ public class PracticeService {
             PracticeSessionRepository sessions,
             PracticeSessionItemRepository items,
             PracticeAnswerRepository answers,
+            EntitlementService entitlements,
             ObjectMapper objectMapper,
             Clock clock
     ) {
@@ -80,6 +85,7 @@ public class PracticeService {
         this.sessions = sessions;
         this.items = items;
         this.answers = answers;
+        this.entitlements = entitlements;
         this.objectMapper = objectMapper;
         this.clock = clock;
     }
@@ -96,6 +102,7 @@ public class PracticeService {
         if (pool.isEmpty()) {
             throw ApiException.badRequest("NO_QUESTIONS", "No published questions match those filters yet.");
         }
+        EntitlementService.StartGrant grant = entitlements.authorizeStart(userId);
         Collections.shuffle(pool);
         int take = Math.min(request.questionCount(), pool.size());
         List<UUID> chosen = pool.subList(0, take);
@@ -116,6 +123,8 @@ public class PracticeService {
         session.setMustSubmitBy(now.plusSeconds(duration));
         session.setStatus(IN_PROGRESS);
         session.setCreatedAt(now);
+        session.setEntitlementSnapshot(writeSnapshot(grant.snapshot()));
+        session.setRewardedAttempt(grant.usedRewardedCredit());
         sessions.save(session);
         int order = 1;
         for (UUID questionId : chosen) {
@@ -210,7 +219,7 @@ public class PracticeService {
                     .map(step -> new Step(step.getStepOrder(), step.getTitle(), step.getBody()))
                     .toList();
             PracticeAnswerEntity answer = answerMap.get(item.getQuestionId());
-            reviewItems.add(new ReviewItem(
+            ReviewItem reviewItem = new ReviewItem(
                     item.getItemOrder(),
                     student,
                     stored.optionIds(),
@@ -225,7 +234,8 @@ public class PracticeService {
                     explanation == null ? null : explanation.getExamTip(),
                     stepDtos,
                     question.getDifficulty()
-            ));
+            );
+            reviewItems.add(ReviewEntitlementFilter.apply(reviewItem, reviewSnapshot(session)));
         }
         return new ReviewResponse(session.getId(), toResult(session), reviewItems);
     }
@@ -368,6 +378,34 @@ public class PracticeService {
             throw ApiException.forbidden("You cannot open another student's practice session.");
         }
         return session;
+    }
+
+    private EntitlementSnapshot reviewSnapshot(PracticeSessionEntity session) {
+        EntitlementSnapshot stored = readSnapshot(session.getEntitlementSnapshot());
+        if (stored != null) {
+            return stored;
+        }
+        return new EntitlementSnapshot(
+                EntitlementSnapshot.PREMIUM, "Premium", "LEGACY", true, true, true, false, 0, 0, 0, Integer.MAX_VALUE);
+    }
+
+    private String writeSnapshot(EntitlementSnapshot snapshot) {
+        try {
+            return objectMapper.writeValueAsString(snapshot);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    private EntitlementSnapshot readSnapshot(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, EntitlementSnapshot.class);
+        } catch (JsonProcessingException ex) {
+            return null;
+        }
     }
 
     private String writePayload(StoredAnswer payload) {
