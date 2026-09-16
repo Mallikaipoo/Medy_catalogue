@@ -66,6 +66,15 @@ class CatalogRepository {
     }
   }
 
+  Future<ExamSyllabus> syllabus(String examId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/exams/$examId/syllabus');
+      return ExamSyllabus.fromJson(response.data!);
+    } on DioException catch (error) {
+      throw _wrap(error);
+    }
+  }
+
   Object _wrap(DioException error) => error.error is Failure ? error.error as Failure : Failure.offline;
 }
 
@@ -141,12 +150,19 @@ class ChapterCard {
 }
 
 class TopicCard {
-  const TopicCard({required this.id, required this.name, required this.publishedQuestions, this.keyPoints});
+  const TopicCard({
+    required this.id,
+    required this.name,
+    required this.publishedQuestions,
+    this.keyPoints,
+    this.focusLabel,
+  });
 
   final String id;
   final String name;
   final int publishedQuestions;
   final String? keyPoints;
+  final String? focusLabel;
 
   factory TopicCard.fromJson(Map<String, dynamic> json) {
     return TopicCard(
@@ -154,6 +170,7 @@ class TopicCard {
       name: json['name'] as String,
       publishedQuestions: (json['publishedQuestions'] as num?)?.toInt() ?? 0,
       keyPoints: json['keyPoints'] as String?,
+      focusLabel: json['focusLabel'] as String?,
     );
   }
 }
@@ -166,6 +183,10 @@ class TopicNotes {
     this.keyPoints,
     this.detailedExplanation,
     required this.publishedQuestions,
+    this.focusLabel,
+    this.patternNote,
+    this.spokenScript,
+    this.studyMaterialLocked = false,
   });
 
   final String id;
@@ -174,6 +195,10 @@ class TopicNotes {
   final String? keyPoints;
   final String? detailedExplanation;
   final int publishedQuestions;
+  final String? focusLabel;
+  final String? patternNote;
+  final String? spokenScript;
+  final bool studyMaterialLocked;
 
   factory TopicNotes.fromJson(Map<String, dynamic> json) {
     return TopicNotes(
@@ -183,6 +208,65 @@ class TopicNotes {
       keyPoints: json['keyPoints'] as String?,
       detailedExplanation: json['detailedExplanation'] as String?,
       publishedQuestions: (json['publishedQuestions'] as num?)?.toInt() ?? 0,
+      focusLabel: json['focusLabel'] as String?,
+      patternNote: json['patternNote'] as String?,
+      spokenScript: json['spokenScript'] as String?,
+      studyMaterialLocked: json['studyMaterialLocked'] as bool? ?? false,
+    );
+  }
+}
+
+class ExamSyllabus {
+  const ExamSyllabus({required this.chapters});
+
+  final List<SyllabusChapter> chapters;
+
+  factory ExamSyllabus.fromJson(Map<String, dynamic> json) {
+    return ExamSyllabus(
+      chapters: (json['chapters'] as List<dynamic>? ?? const [])
+          .map((item) => SyllabusChapter.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class SyllabusChapter {
+  const SyllabusChapter({
+    required this.id,
+    required this.name,
+    required this.subjectName,
+    required this.topics,
+  });
+
+  final String id;
+  final String name;
+  final String subjectName;
+  final List<SyllabusTopic> topics;
+
+  factory SyllabusChapter.fromJson(Map<String, dynamic> json) {
+    return SyllabusChapter(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      subjectName: json['subjectName'] as String? ?? '',
+      topics: (json['topics'] as List<dynamic>? ?? const [])
+          .map((item) => SyllabusTopic.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class SyllabusTopic {
+  const SyllabusTopic({required this.id, required this.name, required this.focusLabel});
+
+  final String id;
+  final String name;
+  final String focusLabel;
+
+  factory SyllabusTopic.fromJson(Map<String, dynamic> json) {
+    return SyllabusTopic(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      focusLabel: json['focusLabel'] as String? ?? '',
     );
   }
 }

@@ -8,7 +8,7 @@ public final class ReviewEntitlementFilter {
     }
 
     public static ReviewItem apply(ReviewItem item, EntitlementSnapshot snapshot) {
-        if (snapshot == null || snapshot.detailedExplanations()) {
+        if (snapshot == null || snapshot.detailedExplanations() || item.freePreview()) {
             return item;
         }
         return new ReviewItem(
@@ -25,7 +25,11 @@ public final class ReviewEntitlementFilter {
                 null,
                 item.examTip(),
                 item.steps(),
-                item.difficulty()
+                item.difficulty(),
+                item.freePreview(),
+                item.trapWording(),
+                null,
+                item.examYear()
         );
     }
 }

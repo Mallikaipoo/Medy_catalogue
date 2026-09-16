@@ -16,6 +16,7 @@ Versioning follows [SemVer](https://semver.org/).
 - Student Flutter flow: home, subject/chapter, syllabus notes, question player, result, review.
 - Phase 10 monetization: yearly ₹1,499 default, monthly ₹199, 3-day grace, practice snapshot so billing never stops a live test, ads off the player.
 - 2025 syllabus outlines with key points and detailed notes; original 2016–2025-style practice bank (90 published items) including NEET Zoology. Browser demo at `/demo.html`.
+- Free last-year gift question with answer, explanation, and audio; Premium keeps the full bank, syllabus notes, doubt tutor, and replay library. Audio and short written answers in 14 Indian languages (11 classical plus Hindi, English, Urdu). Bottom navigation plus resume of the last screen.
 
 ## [0.1.0] — 2026-09-16
 

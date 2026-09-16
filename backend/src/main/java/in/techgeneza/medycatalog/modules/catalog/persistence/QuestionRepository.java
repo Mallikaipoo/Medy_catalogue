@@ -31,12 +31,16 @@ public interface QuestionRepository extends JpaRepository<QuestionEntity, UUID> 
               and (:chapterId is null or q.chapterId = :chapterId)
               and (:topicId is null or q.topicId = :topicId)
               and (:difficulty is null or q.difficulty = :difficulty)
+              and (:freePreviewOnly = false or q.freePreview = true)
             """)
     List<UUID> findPublishedIds(
             @Param("examId") UUID examId,
             @Param("subjectId") UUID subjectId,
             @Param("chapterId") UUID chapterId,
             @Param("topicId") UUID topicId,
-            @Param("difficulty") String difficulty
+            @Param("difficulty") String difficulty,
+            @Param("freePreviewOnly") boolean freePreviewOnly
     );
+
+    Optional<QuestionEntity> findFirstByExamIdAndFreePreviewTrueAndStatus(UUID examId, String status);
 }

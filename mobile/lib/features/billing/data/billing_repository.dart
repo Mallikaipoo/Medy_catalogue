@@ -105,6 +105,11 @@ class Entitlement {
     required this.extraStartsRemaining,
     required this.practiceStartedToday,
     required this.practiceRemainingToday,
+    this.fullQuestionBank = false,
+    this.studyMaterial = false,
+    this.audioExplain = true,
+    this.doubtTutor = false,
+    this.resumeLibrary = false,
   });
 
   final String planCode;
@@ -118,6 +123,11 @@ class Entitlement {
   final int extraStartsRemaining;
   final int practiceStartedToday;
   final int practiceRemainingToday;
+  final bool fullQuestionBank;
+  final bool studyMaterial;
+  final bool audioExplain;
+  final bool doubtTutor;
+  final bool resumeLibrary;
 
   bool get premium => planCode == 'PREMIUM';
 
@@ -134,6 +144,11 @@ class Entitlement {
       extraStartsRemaining: (json['extraStartsRemaining'] as num?)?.toInt() ?? 0,
       practiceStartedToday: (json['practiceStartedToday'] as num?)?.toInt() ?? 0,
       practiceRemainingToday: (json['practiceRemainingToday'] as num?)?.toInt() ?? 0,
+      fullQuestionBank: json['fullQuestionBank'] as bool? ?? false,
+      studyMaterial: json['studyMaterial'] as bool? ?? false,
+      audioExplain: json['audioExplain'] as bool? ?? true,
+      doubtTutor: json['doubtTutor'] as bool? ?? false,
+      resumeLibrary: json['resumeLibrary'] as bool? ?? false,
     );
   }
 }

@@ -49,8 +49,8 @@ public class CatalogController {
     }
 
     @GetMapping("/topics/{topicId}")
-    public TopicNotes topicNotes(@PathVariable UUID topicId) {
-        return catalogService.topicNotes(topicId);
+    public TopicNotes topicNotes(Authentication authentication, @PathVariable UUID topicId) {
+        return catalogService.topicNotes((UUID) authentication.getPrincipal(), topicId);
     }
 
     @GetMapping("/exams/{examId}/syllabus")

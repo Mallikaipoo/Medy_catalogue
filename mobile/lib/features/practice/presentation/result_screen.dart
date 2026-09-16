@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:medycatalog/features/billing/data/billing_repository.dart';
 import 'package:medycatalog/features/billing/presentation/ad_banner_slot.dart';
+import 'package:medycatalog/features/learning/presentation/audio_button.dart';
+import 'package:medycatalog/features/learning/presentation/doubt_sheet.dart';
+import 'package:medycatalog/features/learning/presentation/locale_controller.dart';
 import 'package:medycatalog/features/practice/data/practice_repository.dart';
 
 class ResultScreen extends ConsumerWidget {
@@ -118,7 +121,7 @@ class ReviewScreen extends ConsumerWidget {
                         ),
                       if (item.simpleExplanation != null) ...[
                         const SizedBox(height: 12),
-                        Text('Simple explanation', style: Theme.of(context).textTheme.titleSmall),
+                        Text('Short explanation', style: Theme.of(context).textTheme.titleSmall),
                         Text(item.simpleExplanation!),
                       ],
                       if (item.detailedExplanation != null) ...[
@@ -126,10 +129,31 @@ class ReviewScreen extends ConsumerWidget {
                         Text('Detailed explanation', style: Theme.of(context).textTheme.titleSmall),
                         Text(item.detailedExplanation!),
                       ],
+                      if (item.methodScript != null) ...[
+                        const SizedBox(height: 8),
+                        Text('Method: ${item.methodScript!}'),
+                      ],
+                      if (item.trapWording != null) ...[
+                        const SizedBox(height: 8),
+                        Text('Same idea, different sentence: ${item.trapWording!}'),
+                      ],
                       if (item.examTip != null) ...[
                         const SizedBox(height: 8),
                         Text('Exam tip: ${item.examTip!}'),
                       ],
+                      const SizedBox(height: 8),
+                      AudioButton(
+                        script: item.methodScript ?? item.detailedExplanation ?? item.simpleExplanation ?? '',
+                        ttsCode: ref.watch(localeControllerProvider).ttsCode,
+                      ),
+                      TextButton(
+                        onPressed: () => showDoubtSheet(
+                          context,
+                          ref: ref,
+                          questionId: item.question.id,
+                        ),
+                        child: const Text('Ask a doubt about this'),
+                      ),
                       for (final step in item.steps) ...[
                         const SizedBox(height: 6),
                         Text('Step ${step.order}${step.title == null ? '' : ': ${step.title}'}'),

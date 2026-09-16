@@ -1,6 +1,8 @@
 package in.techgeneza.medycatalog.modules.catalog.application;
 
 import in.techgeneza.medycatalog.common.exception.ApiException;
+import in.techgeneza.medycatalog.modules.billing.application.EntitlementService;
+import in.techgeneza.medycatalog.modules.learning.application.LearningService;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.ChapterCard;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.ExamSyllabus;
 import in.techgeneza.medycatalog.modules.catalog.api.dto.CatalogDtos.HomeResponse;
@@ -46,6 +48,7 @@ public class CatalogService {
     private final TopicRepository topics;
     private final QuestionRepository questions;
     private final QuestionOptionRepository options;
+    private final EntitlementService entitlements;
 
     public CatalogService(
             UserRepository users,
@@ -56,7 +59,8 @@ public class CatalogService {
             ChapterRepository chapters,
             TopicRepository topics,
             QuestionRepository questions,
-            QuestionOptionRepository options
+            QuestionOptionRepository options,
+            EntitlementService entitlements
     ) {
         this.users = users;
         this.exams = exams;
@@ -67,6 +71,7 @@ public class CatalogService {
         this.topics = topics;
         this.questions = questions;
         this.options = options;
+        this.entitlements = entitlements;
     }
 
     @Transactional(readOnly = true)
@@ -118,22 +123,31 @@ public class CatalogService {
                         topic.getName(),
                         questions.countByTopicIdAndStatus(topic.getId(), PUBLISHED),
                         topic.getSortOrder(),
-                        topic.getKeyPoints()))
+                        topic.getKeyPoints(),
+                        topic.getExamHitCount(),
+                        LearningService.focusLabel(topic.getExamHitCount()),
+                        topic.getPatternNote()))
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public TopicNotes topicNotes(UUID topicId) {
+    public TopicNotes topicNotes(UUID userId, UUID topicId) {
         var topic = topics.findById(topicId)
                 .orElseThrow(() -> ApiException.notFound("That topic is not available."));
         int year = topic.getSyllabusYear() == null ? 2025 : topic.getSyllabusYear();
+        boolean locked = userId == null || !entitlements.snapshot(userId).hasStudyMaterial();
         return new TopicNotes(
                 topic.getId(),
                 topic.getName(),
                 year,
                 topic.getKeyPoints(),
-                topic.getDetailedExplanation(),
-                questions.countByTopicIdAndStatus(topic.getId(), PUBLISHED)
+                locked ? null : topic.getDetailedExplanation(),
+                questions.countByTopicIdAndStatus(topic.getId(), PUBLISHED),
+                topic.getExamHitCount(),
+                LearningService.focusLabel(topic.getExamHitCount()),
+                topic.getPatternNote(),
+                locked ? null : topic.getSpokenScript(),
+                locked
         );
     }
 
@@ -151,7 +165,9 @@ public class CatalogService {
                                     topic.getId(),
                                     topic.getName(),
                                     topic.getKeyPoints(),
-                                    questions.countByTopicIdAndStatus(topic.getId(), PUBLISHED)))
+                                    questions.countByTopicIdAndStatus(topic.getId(), PUBLISHED),
+                                    topic.getExamHitCount(),
+                                    LearningService.focusLabel(topic.getExamHitCount())))
                             .toList();
                     return new SyllabusChapter(
                             chapter.getId(),

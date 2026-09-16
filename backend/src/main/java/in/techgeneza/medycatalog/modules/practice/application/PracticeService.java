@@ -91,18 +91,27 @@ public class PracticeService {
     }
 
     @Transactional(readOnly = true)
-    public PreviewResponse preview(StartRequest request) {
-        List<UUID> ids = publishedIds(request);
+    public PreviewResponse preview(UUID userId, StartRequest request) {
+        boolean previewOnly = !entitlements.snapshot(userId).hasFullQuestionBank();
+        List<UUID> ids = publishedIds(request, previewOnly);
         return new PreviewResponse(ids.size(), request.questionCount());
     }
 
     @Transactional
     public SessionResponse start(UUID userId, StartRequest request) {
-        List<UUID> pool = new ArrayList<>(publishedIds(request));
+        EntitlementService.StartGrant grant = entitlements.authorizeStart(userId);
+        boolean previewOnly = !grant.snapshot().hasFullQuestionBank();
+        List<UUID> pool = new ArrayList<>(publishedIds(request, previewOnly));
+        if (pool.isEmpty() && previewOnly) {
+            throw new ApiException(
+                    org.springframework.http.HttpStatus.FORBIDDEN,
+                    "PREMIUM_REQUIRED",
+                    "Free includes one last-year question with answer and explanation. Subscribe to continue the full bank."
+            );
+        }
         if (pool.isEmpty()) {
             throw ApiException.badRequest("NO_QUESTIONS", "No published questions match those filters yet.");
         }
-        EntitlementService.StartGrant grant = entitlements.authorizeStart(userId);
         Collections.shuffle(pool);
         int take = Math.min(request.questionCount(), pool.size());
         List<UUID> chosen = pool.subList(0, take);
@@ -233,20 +242,25 @@ public class PracticeService {
                     explanation == null ? null : explanation.getWhyOthersWrong(),
                     explanation == null ? null : explanation.getExamTip(),
                     stepDtos,
-                    question.getDifficulty()
+                    question.getDifficulty(),
+                    question.isFreePreview(),
+                    question.getTrapWording(),
+                    question.getMethodScript(),
+                    question.getExamYear()
             );
             reviewItems.add(ReviewEntitlementFilter.apply(reviewItem, reviewSnapshot(session)));
         }
         return new ReviewResponse(session.getId(), toResult(session), reviewItems);
     }
 
-    private List<UUID> publishedIds(StartRequest request) {
+    private List<UUID> publishedIds(StartRequest request, boolean freePreviewOnly) {
         return questions.findPublishedIds(
                 request.examId(),
                 request.subjectId(),
                 request.chapterId(),
                 request.topicId(),
-                blankToNull(request.difficulty())
+                blankToNull(request.difficulty()),
+                freePreviewOnly
         );
     }
 
@@ -386,7 +400,8 @@ public class PracticeService {
             return stored;
         }
         return new EntitlementSnapshot(
-                EntitlementSnapshot.PREMIUM, "Premium", "LEGACY", true, true, true, false, 0, 0, 0, Integer.MAX_VALUE);
+                EntitlementSnapshot.PREMIUM, "Premium", "LEGACY", true, true, true, false, 0, 0, 0, Integer.MAX_VALUE,
+                true, true, true, true, true);
     }
 
     private String writeSnapshot(EntitlementSnapshot snapshot) {

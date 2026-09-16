@@ -252,6 +252,9 @@ class ReviewItem {
     this.detailedExplanation,
     this.examTip,
     this.steps = const [],
+    this.trapWording,
+    this.methodScript,
+    this.freePreview = false,
   });
 
   final int order;
@@ -263,6 +266,9 @@ class ReviewItem {
   final String? detailedExplanation;
   final String? examTip;
   final List<ReviewStep> steps;
+  final String? trapWording;
+  final String? methodScript;
+  final bool freePreview;
 
   factory ReviewItem.fromJson(Map<String, dynamic> json) {
     return ReviewItem(
@@ -277,6 +283,9 @@ class ReviewItem {
       steps: (json['steps'] as List<dynamic>? ?? const [])
           .map((item) => ReviewStep.fromJson(item as Map<String, dynamic>))
           .toList(),
+      trapWording: json['trapWording'] as String?,
+      methodScript: json['methodScript'] as String?,
+      freePreview: json['freePreview'] as bool? ?? false,
     );
   }
 }

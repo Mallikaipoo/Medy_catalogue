@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:medycatalog/features/billing/data/billing_repository.dart';
 import 'package:medycatalog/features/billing/presentation/ad_banner_slot.dart';
 import 'package:medycatalog/features/catalog/data/catalog_repository.dart';
+import 'package:medycatalog/features/learning/data/learning_repository.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -18,11 +19,6 @@ class HomeScreen extends ConsumerWidget {
             tooltip: 'Premium',
             onPressed: () => context.push('/premium'),
             icon: const Icon(Icons.workspace_premium_outlined),
-          ),
-          IconButton(
-            tooltip: 'Profile',
-            onPressed: () => context.push('/profile'),
-            icon: const Icon(Icons.person_outline),
           ),
         ],
       ),
@@ -60,6 +56,16 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               Text('Continue learning', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
+              if (bundle.resume != null)
+                Card(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  child: ListTile(
+                    leading: const Icon(Icons.play_circle_outline),
+                    title: const Text('Pick up where you left'),
+                    subtitle: Text(bundle.resume!.title),
+                    onTap: () => context.go(bundle.resume!.route),
+                  ),
+                ),
               for (final subject in home.subjects)
                 Card(
                   child: ListTile(
@@ -75,7 +81,7 @@ class HomeScreen extends ConsumerWidget {
               FilledButton(
                 onPressed: home.subjects.isEmpty
                     ? null
-                    : () => context.push('/practice/setup?examId=${home.examId}'),
+                    : () => context.go('/practice/hub?examId=${home.examId}'),
                 child: const Text('Start practice'),
               ),
               if (bundle.me != null && !bundle.me!.entitlement.premium)
@@ -101,16 +107,21 @@ class HomeScreen extends ConsumerWidget {
     try {
       ads = await ref.read(billingRepositoryProvider).ads();
     } catch (_) {}
-    return _HomeBundle(home, me, ads);
+    ResumeState? resume;
+    try {
+      resume = await ref.read(learningRepositoryProvider).resume();
+    } catch (_) {}
+    return _HomeBundle(home, me, ads, resume);
   }
 }
 
 class _HomeBundle {
-  const _HomeBundle(this.home, this.me, this.ads);
+  const _HomeBundle(this.home, this.me, this.ads, this.resume);
 
   final HomeData home;
   final SubscriptionMe? me;
   final AdsConfig? ads;
+  final ResumeState? resume;
 }
 
 class ChaptersScreen extends ConsumerWidget {
@@ -143,7 +154,7 @@ class ChaptersScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               FilledButton(
-                onPressed: () => context.push('/practice/setup?examId=$examId&subjectId=$subjectId'),
+                onPressed: () => context.go('/practice/hub?examId=$examId&subjectId=$subjectId'),
                 child: const Text('Practice this subject'),
               ),
               const SizedBox(height: 12),

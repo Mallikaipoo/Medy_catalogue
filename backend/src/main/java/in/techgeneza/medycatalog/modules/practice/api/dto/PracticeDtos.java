@@ -82,7 +82,11 @@ public final class PracticeDtos {
             String whyOthersWrong,
             String examTip,
             List<Step> steps,
-            String difficulty
+            String difficulty,
+            boolean freePreview,
+            String trapWording,
+            String methodScript,
+            Integer examYear
     ) {
     }
 

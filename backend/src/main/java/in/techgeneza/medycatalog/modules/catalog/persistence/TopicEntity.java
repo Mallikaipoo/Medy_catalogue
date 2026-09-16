@@ -37,4 +37,13 @@ public class TopicEntity {
 
     @Column(name = "syllabus_year")
     private Integer syllabusYear;
+
+    @Column(name = "exam_hit_count", nullable = false)
+    private int examHitCount;
+
+    @Column(name = "pattern_note")
+    private String patternNote;
+
+    @Column(name = "spoken_script")
+    private String spokenScript;
 }

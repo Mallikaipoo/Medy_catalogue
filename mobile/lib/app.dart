@@ -9,7 +9,10 @@ import 'package:medycatalog/features/auth/presentation/session_controller.dart';
 import 'package:medycatalog/features/auth/presentation/splash_screen.dart';
 import 'package:medycatalog/features/billing/presentation/paywall_screen.dart';
 import 'package:medycatalog/features/catalog/presentation/topics_screen.dart';
+import 'package:medycatalog/features/home/presentation/app_shell.dart';
 import 'package:medycatalog/features/home/presentation/home_screen.dart';
+import 'package:medycatalog/features/learning/presentation/library_screen.dart';
+import 'package:medycatalog/features/learning/presentation/study_screen.dart';
 import 'package:medycatalog/features/practice/presentation/practice_setup_screen.dart';
 import 'package:medycatalog/features/practice/presentation/question_player_screen.dart';
 import 'package:medycatalog/features/practice/presentation/result_screen.dart';
@@ -60,9 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/register', builder: (context, state) => const RegisterScreen()),
       GoRoute(path: '/exams', builder: (context, state) => const ExamPickerScreen()),
-      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
       GoRoute(path: '/premium', builder: (context, state) => const PaywallScreen()),
-      GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
       GoRoute(
         path: '/chapters',
         builder: (context, state) => ChaptersScreen(
@@ -90,14 +91,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
-        path: '/practice/setup',
-        builder: (context, state) => PracticeSetupScreen(
-          examId: state.uri.queryParameters['examId'] ?? '',
-          subjectId: state.uri.queryParameters['subjectId'],
-          chapterId: state.uri.queryParameters['chapterId'],
-        ),
-      ),
-      GoRoute(
         path: '/practice/:sessionId',
         builder: (context, state) => QuestionPlayerScreen(sessionId: state.pathParameters['sessionId']!),
       ),
@@ -108,6 +101,35 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/practice/:sessionId/review',
         builder: (context, state) => ReviewScreen(sessionId: state.pathParameters['sessionId']!),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [GoRoute(path: '/home', builder: (context, state) => const HomeScreen())],
+          ),
+          StatefulShellBranch(
+            routes: [GoRoute(path: '/study', builder: (context, state) => const StudyScreen())],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/practice/hub',
+                builder: (context, state) => PracticeSetupScreen(
+                  examId: state.uri.queryParameters['examId'] ?? '',
+                  subjectId: state.uri.queryParameters['subjectId'],
+                  chapterId: state.uri.queryParameters['chapterId'],
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [GoRoute(path: '/library', builder: (context, state) => const LibraryScreen())],
+          ),
+          StatefulShellBranch(
+            routes: [GoRoute(path: '/me', builder: (context, state) => const ProfileScreen())],
+          ),
+        ],
       ),
     ],
   );

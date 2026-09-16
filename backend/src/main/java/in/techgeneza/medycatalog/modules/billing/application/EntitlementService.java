@@ -80,7 +80,12 @@ public class EntitlementService {
                 unlimited ? 0 : daily,
                 extra,
                 started,
-                remaining
+                remaining,
+                bool(byCode, "full_question_bank"),
+                bool(byCode, "study_material"),
+                bool(byCode, "audio_explain") || unlimited,
+                bool(byCode, "doubt_tutor"),
+                bool(byCode, "resume_library")
         );
     }
 

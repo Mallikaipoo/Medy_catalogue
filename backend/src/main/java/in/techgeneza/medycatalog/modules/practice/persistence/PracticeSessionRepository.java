@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public interface PracticeSessionRepository extends JpaRepository<PracticeSessionEntity, UUID> {
@@ -14,4 +15,6 @@ public interface PracticeSessionRepository extends JpaRepository<PracticeSession
             where s.userId = :userId and s.createdAt >= :from
             """)
     long countStartedSince(@Param("userId") UUID userId, @Param("from") Instant from);
+
+    List<PracticeSessionEntity> findTop20ByUserIdAndStatusOrderBySubmittedAtDesc(UUID userId, String status);
 }

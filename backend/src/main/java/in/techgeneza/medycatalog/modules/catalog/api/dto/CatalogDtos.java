@@ -31,7 +31,10 @@ public final class CatalogDtos {
             String name,
             long publishedQuestions,
             int sortOrder,
-            String keyPoints
+            String keyPoints,
+            int examHitCount,
+            String focusLabel,
+            String patternNote
     ) {
     }
 
@@ -41,11 +44,23 @@ public final class CatalogDtos {
             int syllabusYear,
             String keyPoints,
             String detailedExplanation,
-            long publishedQuestions
+            long publishedQuestions,
+            int examHitCount,
+            String focusLabel,
+            String patternNote,
+            String spokenScript,
+            boolean studyMaterialLocked
     ) {
     }
 
-    public record SyllabusTopic(UUID id, String name, String keyPoints, long publishedQuestions) {
+    public record SyllabusTopic(
+            UUID id,
+            String name,
+            String keyPoints,
+            long publishedQuestions,
+            int examHitCount,
+            String focusLabel
+    ) {
     }
 
     public record SyllabusChapter(

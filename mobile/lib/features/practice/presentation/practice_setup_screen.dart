@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:medycatalog/features/auth/presentation/session_controller.dart';
 import 'package:medycatalog/features/billing/data/billing_repository.dart';
+import 'package:medycatalog/features/learning/data/learning_repository.dart';
 import 'package:medycatalog/features/practice/data/practice_repository.dart';
 
 class PracticeSetupScreen extends ConsumerStatefulWidget {
@@ -21,10 +23,21 @@ class PracticeSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _PracticeSetupScreenState extends ConsumerState<PracticeSetupScreen> {
-  int _count = 5;
+  int _count = 1;
   var _busy = false;
   String? _error;
   Entitlement? _entitlement;
+
+  String get _examId {
+    if (widget.examId.isNotEmpty) {
+      return widget.examId;
+    }
+    final exams = ref.read(sessionControllerProvider).valueOrNull?.exams ?? const [];
+    if (exams.isEmpty) {
+      return '';
+    }
+    return exams.where((item) => item.primary).isEmpty ? exams.first.id : exams.where((item) => item.primary).first.id;
+  }
 
   @override
   void initState() {
@@ -38,7 +51,10 @@ class _PracticeSetupScreenState extends ConsumerState<PracticeSetupScreen> {
       if (!mounted) {
         return;
       }
-      setState(() => _entitlement = me.entitlement);
+      setState(() {
+        _entitlement = me.entitlement;
+        _count = me.entitlement.fullQuestionBank ? 5 : 1;
+      });
     } catch (_) {}
   }
 
@@ -71,10 +87,18 @@ class _PracticeSetupScreenState extends ConsumerState<PracticeSetupScreen> {
     });
     try {
       final session = await ref.read(practiceRepositoryProvider).start(
-            examId: widget.examId,
+            examId: _examId,
             subjectId: widget.subjectId,
             chapterId: widget.chapterId,
-            questionCount: _count,
+            questionCount: _entitlement?.fullQuestionBank == true ? _count : 1,
+          );
+      if (!mounted) {
+        return;
+      }
+      await ref.read(learningRepositoryProvider).saveResume(
+            route: '/practice/${session.id}',
+            title: 'Continue practice',
+            examId: _examId,
           );
       if (!mounted) {
         return;
@@ -90,29 +114,34 @@ class _PracticeSetupScreenState extends ConsumerState<PracticeSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final free = _entitlement != null && !_entitlement!.fullQuestionBank;
     return Scaffold(
-      appBar: AppBar(title: const Text('Practice setup')),
+      appBar: AppBar(title: const Text('Practice')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('How many questions?'),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: [
-              for (final count in [5, 10, 20])
-                ChoiceChip(
-                  label: Text('$count'),
-                  selected: _count == count,
-                  onSelected: (_) => setState(() => _count = count),
-                ),
-            ],
-          ),
+          Text(free
+              ? 'Free includes one last-year question with answer, explanation, and audio.'
+              : 'How many questions?'),
+          if (!free) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final count in [5, 10, 20])
+                  ChoiceChip(
+                    label: Text('$count'),
+                    selected: _count == count,
+                    onSelected: (_) => setState(() => _count = count),
+                  ),
+              ],
+            ),
+          ],
           if (_entitlement != null) ...[
             const SizedBox(height: 16),
             Text(
               _entitlement!.unlimitedPractice
-                  ? 'Premium · start anytime'
+                  ? 'Premium · full question bank'
                   : '${_entitlement!.practiceRemainingToday} starts left today',
             ),
           ],
@@ -122,18 +151,21 @@ class _PracticeSetupScreenState extends ConsumerState<PracticeSetupScreen> {
           ],
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _busy ? null : _start,
-            child: Text(_busy ? 'Starting…' : 'Start practice'),
+            onPressed: _busy || _examId.isEmpty ? null : _start,
+            child: Text(_busy ? 'Starting…' : free ? 'Try the free last-year question' : 'Start practice'),
           ),
+          if (free) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => context.push('/premium'),
+              child: const Text('Unlock the full bank after this question'),
+            ),
+          ],
           if (_entitlement != null && !_entitlement!.unlimitedPractice) ...[
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: _busy || !_entitlement!.rewardedExtraAttempts ? null : _watchAd,
               child: const Text('Watch ad for one extra start'),
-            ),
-            TextButton(
-              onPressed: () => context.push('/premium'),
-              child: const Text('Unlimited with yearly Premium'),
             ),
           ],
         ],

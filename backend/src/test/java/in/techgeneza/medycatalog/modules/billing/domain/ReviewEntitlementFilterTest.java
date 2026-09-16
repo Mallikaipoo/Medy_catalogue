@@ -16,7 +16,8 @@ class ReviewEntitlementFilterTest {
     void sessionSnapshotKeepsDetailedReviewAfterPlanLapses() {
         ReviewItem item = sample("Keep this", "Why others");
         EntitlementSnapshot startedPremium = new EntitlementSnapshot(
-                EntitlementSnapshot.PREMIUM, "Premium", "ACTIVE", true, true, true, false, 0, 0, 0, 99);
+                EntitlementSnapshot.PREMIUM, "Premium", "ACTIVE", true, true, true, false, 0, 0, 0, 99,
+                true, true, true, true, true);
         ReviewItem filtered = ReviewEntitlementFilter.apply(item, startedPremium);
         assertThat(filtered.detailedExplanation()).isEqualTo("Keep this");
         assertThat(filtered.whyOthersWrong()).isEqualTo("Why others");
@@ -33,6 +34,21 @@ class ReviewEntitlementFilterTest {
     }
 
     @Test
+    void freePreviewKeepsFullExplanation() {
+        ReviewItem item = new ReviewItem(
+                1,
+                new StudentQuestion(
+                        UUID.randomUUID(), "Q", "SINGLE_MCQ", false, false, "EASY",
+                        BigDecimal.ONE, BigDecimal.ZERO, 30, UUID.randomUUID(), List.of()),
+                List.of(), List.of(), null, null, true, BigDecimal.ONE,
+                "Simple", "Keep this", "Why others", "Tip", List.of(), "EASY",
+                true, "Trap", "Method", 2025);
+        ReviewItem filtered = ReviewEntitlementFilter.apply(item, EntitlementSnapshot.freeDefaults());
+        assertThat(filtered.detailedExplanation()).isEqualTo("Keep this");
+        assertThat(filtered.methodScript()).isEqualTo("Method");
+    }
+
+    @Test
     void adsNeverAttachToPlayerOrSubmit() {
         assertThat(AdsPlacementPolicy.allowedOnStudentUi("HOME_BANNER")).isTrue();
         assertThat(AdsPlacementPolicy.allowedOnStudentUi("PLAYER")).isFalse();
@@ -46,6 +62,6 @@ class ReviewEntitlementFilterTest {
                 BigDecimal.ONE, BigDecimal.ZERO, 30, UUID.randomUUID(), List.of());
         return new ReviewItem(
                 1, question, List.of(), List.of(), null, null, true, BigDecimal.ONE,
-                "Simple", detailed, whyWrong, "Tip", List.of(), "EASY");
+                "Simple", detailed, whyWrong, "Tip", List.of(), "EASY", false, null, null, 2025);
     }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:medycatalog/features/learning/data/learning_repository.dart';
 import 'package:medycatalog/features/practice/data/practice_repository.dart';
 
 class QuestionPlayerScreen extends ConsumerStatefulWidget {
@@ -51,6 +52,10 @@ class _QuestionPlayerScreenState extends ConsumerState<QuestionPlayerScreen> {
         _remaining = session.remainingSeconds;
         _syncNumerical();
       });
+      await ref.read(learningRepositoryProvider).saveResume(
+            route: '/practice/${session.id}',
+            title: 'Continue question ${_index + 1}',
+          );
       _timer?.cancel();
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (_remaining <= 1) {

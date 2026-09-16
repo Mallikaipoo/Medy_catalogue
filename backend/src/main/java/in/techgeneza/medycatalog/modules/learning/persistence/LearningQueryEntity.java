@@ -1,0 +1,53 @@
+package in.techgeneza.medycatalog.modules.learning.persistence;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
+@Table(name = "learning_queries")
+public class LearningQueryEntity {
+
+    @Id
+    private UUID id;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    @Column(name = "exam_id")
+    private UUID examId;
+
+    @Column(name = "question_id")
+    private UUID questionId;
+
+    @Column(name = "topic_id")
+    private UUID topicId;
+
+    @Column(nullable = false)
+    private String source;
+
+    @Column(nullable = false)
+    private String locale;
+
+    @Column(name = "query_text", nullable = false)
+    private String queryText;
+
+    @Column(name = "answer_short", nullable = false)
+    private String answerShort;
+
+    @Column(name = "spoken_script", nullable = false)
+    private String spokenScript;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+}

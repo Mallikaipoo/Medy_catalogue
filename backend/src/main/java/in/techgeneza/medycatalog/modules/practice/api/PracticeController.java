@@ -29,8 +29,8 @@ public class PracticeController {
     }
 
     @PostMapping("/preview")
-    public PreviewResponse preview(@Valid @RequestBody StartRequest request) {
-        return practiceService.preview(request);
+    public PreviewResponse preview(Authentication authentication, @Valid @RequestBody StartRequest request) {
+        return practiceService.preview((UUID) authentication.getPrincipal(), request);
     }
 
     @PostMapping("/start")

@@ -59,6 +59,15 @@ public class QuestionEntity {
     @Column(name = "exam_year")
     private Integer examYear;
 
+    @Column(name = "is_free_preview", nullable = false)
+    private boolean freePreview;
+
+    @Column(name = "trap_wording")
+    private String trapWording;
+
+    @Column(name = "method_script")
+    private String methodScript;
+
     @Column(name = "source_type")
     private String sourceType;
 
