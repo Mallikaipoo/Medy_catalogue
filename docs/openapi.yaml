@@ -1,0 +1,396 @@
+openapi: 3.0.3
+info:
+  title: MedyCatalog API
+  description: Student and admin REST API. Versioned under /api/v1. Correct answers are omitted until after submission.
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+tags:
+  - name: Auth
+  - name: Account
+  - name: Catalog
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '409':
+          description: Email already registered
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Email login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid credentials
+  /auth/google:
+    post:
+      tags: [Auth]
+      summary: Sign in with Google ID token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialTokenRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+  /auth/apple:
+    post:
+      tags: [Auth]
+      summary: Sign in with Apple identity token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialTokenRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+  /auth/otp/request:
+    post:
+      tags: [Auth]
+      summary: Request email OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OtpRequest'
+      responses:
+        '202':
+          description: OTP dispatched (or debugCode in local profile)
+  /auth/otp/verify:
+    post:
+      tags: [Auth]
+      summary: Verify email OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OtpVerifyRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+  /auth/guest:
+    post:
+      tags: [Auth]
+      summary: Create a guest account
+      responses:
+        '201':
+          description: Guest session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+  /auth/guest/upgrade:
+    post:
+      tags: [Auth]
+      summary: Upgrade guest to email or social
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuestUpgradeRequest'
+      responses:
+        '200':
+          description: Upgraded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rotate refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: New token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke refresh token
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '204':
+          description: Logged out
+  /auth/password/forgot:
+    post:
+      tags: [Auth]
+      summary: Request password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '202':
+          description: Always accepted (no email enumeration)
+  /auth/password/reset:
+    post:
+      tags: [Auth]
+      summary: Reset password with emailed code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '204':
+          description: Password updated
+  /me:
+    get:
+      tags: [Account]
+      summary: Current profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    patch:
+      tags: [Account]
+      summary: Update profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    delete:
+      tags: [Account]
+      summary: Request account deletion
+      security:
+        - bearerAuth: []
+      responses:
+        '202':
+          description: Deletion scheduled
+  /me/exams:
+    patch:
+      tags: [Account]
+      summary: Set enrolled exams (one primary)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExamsRequest'
+      responses:
+        '200':
+          description: Enrollments saved
+  /me/privacy:
+    get:
+      tags: [Account]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Privacy settings
+    patch:
+      tags: [Account]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Updated
+  /exams:
+    get:
+      tags: [Catalog]
+      summary: List active exams (picker)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Exam list
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        dateOfBirth: { type: string, format: date }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    SocialTokenRequest:
+      type: object
+      required: [idToken]
+      properties:
+        idToken: { type: string }
+        fullName: { type: string }
+        deviceName: { type: string }
+    OtpRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email }
+    OtpVerifyRequest:
+      type: object
+      required: [email, code]
+      properties:
+        email: { type: string }
+        code: { type: string }
+    GuestUpgradeRequest:
+      type: object
+      properties:
+        email: { type: string }
+        password: { type: string }
+        googleIdToken: { type: string }
+        appleIdToken: { type: string }
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string }
+    ResetPasswordRequest:
+      type: object
+      required: [email, code, newPassword]
+      properties:
+        email: { type: string }
+        code: { type: string }
+        newPassword: { type: string, minLength: 8 }
+    TokenResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        tokenType: { type: string, example: Bearer }
+        expiresIn: { type: integer, example: 900 }
+        user:
+          $ref: '#/components/schemas/UserProfile'
+        debugCode: { type: string, description: Present only when local expose-otp is true }
+    UserProfile:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        preferredLanguage: { type: string }
+        accountStatus: { type: string }
+        guest: { type: boolean }
+        roles:
+          type: array
+          items: { type: string }
+        exams:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExamSummary'
+    UpdateProfileRequest:
+      type: object
+      properties:
+        name: { type: string }
+        phone: { type: string }
+        dateOfBirth: { type: string, format: date }
+        country: { type: string }
+        state: { type: string }
+        city: { type: string }
+        preferredLanguage: { type: string }
+        profilePhotoUrl: { type: string }
+    UpdateExamsRequest:
+      type: object
+      required: [examIds, primaryExamId]
+      properties:
+        examIds:
+          type: array
+          items: { type: string, format: uuid }
+        primaryExamId: { type: string, format: uuid }
+    ExamSummary:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        primary: { type: boolean }

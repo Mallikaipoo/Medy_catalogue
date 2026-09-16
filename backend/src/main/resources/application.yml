@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: medycatalog-api
+  profiles:
+    default: dev
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/medycatalog}
+    username: ${DATABASE_USER:medycatalog}
+    password: ${DATABASE_PASSWORD:medycatalog_dev}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: 8080
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+medycatalog:
+  jwt:
+    secret: ${MEDYCATALOG_JWT_SECRET:dev-only-change-me-use-at-least-32-bytes!}
+    access-ttl: 15m
+    refresh-ttl: 30d
+  auth:
+    expose-otp: false
+    google-client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
+    apple-audience: ${APPLE_BUNDLE_ID:in.techgeneza.medycatalog}
+  cors:
+    admin-origin: ${ADMIN_ORIGIN:http://localhost:3000}
+  redis:
+    enabled: false

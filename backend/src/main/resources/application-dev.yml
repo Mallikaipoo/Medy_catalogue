@@ -1,0 +1,14 @@
+spring:
+  docker:
+    compose:
+      enabled: false
+
+medycatalog:
+  auth:
+    expose-otp: true
+  redis:
+    enabled: false
+
+logging:
+  level:
+    in.techgeneza.medycatalog: INFO

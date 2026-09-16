@@ -1,0 +1,9 @@
+{
+  "name": "medycatalog-admin",
+  "private": true,
+  "version": "0.1.0",
+  "description": "MedyCatalog admin console — implemented in Phase 11. Next.js talks only to /api/v1/admin.",
+  "scripts": {
+    "dev": "echo Install Node.js 20+ then scaffold Next.js in Phase 11"
+  }
+}

@@ -1,0 +1,7 @@
+medycatalog:
+  auth:
+    expose-otp: false
+  jwt:
+    secret: ${MEDYCATALOG_JWT_SECRET}
+  redis:
+    enabled: true
